@@ -21,7 +21,7 @@ You can then browse backwards and forwards through those events directly from yo
 
 ## Screenshot
 
-Add a screenshot of the finished card here.
+![Frigate GenAI Event Browser](images/event-browser.png)
 
 ## Requirements
 
