@@ -23,6 +23,21 @@ Features include:
 
 [View the Frigate GenAI Event Browser](./frigate-genai-event-browser/)
 
+### ☁️ Frigate GenAI with Ollama Cloud
+
+A guide to using a separate Ollama host as a gateway between Frigate GenAI and Ollama Cloud.
+
+Covers:
+
+- Installing and configuring an Ollama host
+- Authenticating with Ollama Cloud
+- Exposing the Ollama API securely on the local network
+- Connecting Frigate GenAI to Ollama
+- Testing the complete inference pipeline
+- Optional Ollama Cloud usage monitoring in Home Assistant
+
+[View the Frigate GenAI with Ollama Cloud guide](./frigate-ollama-cloud/)
+
 ---
 
 More snippets will be added as I find useful bits worth sharing.
