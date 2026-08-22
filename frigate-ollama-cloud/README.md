@@ -69,14 +69,19 @@ Replace the IP address and model with those appropriate for your installation.
 
 ## Documentation
 
-The setup is split into several sections:
+Follow the guides in this order:
 
-1. Ollama host setup
-2. Ollama Cloud authentication and testing
-3. LAN API access
-4. Frigate configuration
-5. Home Assistant usage monitoring
+1. [Ollama Host Setup](ollama-host-setup.md)  
+   Install Ollama, authenticate with Ollama Cloud, configure LAN access and test the API.
 
+2. [Frigate Configuration](frigate-configuration.md)  
+   Configure Frigate to use the local Ollama host as its GenAI provider.
+
+3. [Testing](testing.md)  
+   Verify each stage of the Frigate → Ollama → Ollama Cloud pipeline.
+
+4. [Home Assistant Usage Monitoring](home-assistant-usage-monitoring.md) *(optional)*  
+   Monitor Ollama Cloud session and weekly usage from Home Assistant.
 ## Security
 
 Exposing Ollama on your LAN makes its API available to other devices that can reach the host.
