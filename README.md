@@ -17,7 +17,6 @@ Features include:
 - Camera and event time
 - Rolling history of recent GenAI events
 - Previous, Latest and Next navigation
-- Automatically returns to the newest event when a new GenAI result arrives
 - Uses Frigate's MQTT review events
 - Works with Frigate GenAI regardless of the configured AI provider
 
