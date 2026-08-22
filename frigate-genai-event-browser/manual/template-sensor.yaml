@@ -1,1 +1,70 @@
 
+# Frigate GenAI Event Browser
+# MQTT-triggered template sensor
+#
+# Add this beneath an existing `template:` section in configuration.yaml,
+# or adapt it to your existing template configuration structure.
+
+- triggers:
+    - trigger: mqtt
+      topic: frigate/reviews
+
+  conditions:
+    - condition: template
+      value_template: "{{ trigger.payload_json.type == 'genai' }}"
+
+  sensor:
+    - name: Frigate Latest AI Event
+      unique_id: frigate_latest_ai_event
+
+      state: >
+        {{ trigger.payload_json.after.data.metadata.title }}
+
+      attributes:
+        description: >
+          {{ trigger.payload_json.after.data.metadata.scene }}
+
+        summary: >
+          {{ trigger.payload_json.after.data.metadata.shortSummary }}
+
+        camera: >
+          {{ trigger.payload_json.after.camera }}
+
+        objects: >
+          {{ trigger.payload_json.after.data.objects }}
+
+        zones: >
+          {{ trigger.payload_json.after.data.zones }}
+
+        confidence: >
+          {{ trigger.payload_json.after.data.metadata.confidence }}
+
+        threat_level: >
+          {{ trigger.payload_json.after.data.metadata.potential_threat_level }}
+
+        review_id: >
+          {{ trigger.payload_json.after.id }}
+
+        detection_id: >
+          {{ trigger.payload_json.after.data.detections[0] }}
+
+        thumbnail: >
+          {{ trigger.payload_json.after.thumb_path }}
+
+        event_time: >
+          {{ trigger.payload_json.after.data.metadata.time }}
+
+        events: >
+          {% set old = this.attributes.events | default([], true) %}
+          {% set event = {
+            'title': trigger.payload_json.after.data.metadata.title,
+            'description': trigger.payload_json.after.data.metadata.scene,
+            'summary': trigger.payload_json.after.data.metadata.shortSummary,
+            'camera': trigger.payload_json.after.camera,
+            'event_time': trigger.payload_json.after.data.metadata.time,
+            'confidence': trigger.payload_json.after.data.metadata.confidence,
+            'threat_level': trigger.payload_json.after.data.metadata.potential_threat_level,
+            'review_id': trigger.payload_json.after.id,
+            'detection_id': trigger.payload_json.after.data.detections[0]
+          } %}
+          {{ ([event] + old)[:10] }}
