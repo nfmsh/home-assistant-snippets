@@ -1,1 +1,109 @@
+type: vertical-stack
+cards:
+  - type: horizontal-stack
+    cards:
+      - type: button
+        show_name: true
+        show_icon: true
+        icon: mdi:chevron-left
+        tap_action:
+          action: perform-action
+          perform_action: script.frigate_ai_previous
+        card_mod:
+          style: |
+            ha-card {
+              height: 52px !important;
+              padding: 2px !important;
+            }
+            ha-state-icon {
+              --mdc-icon-size: 20px;
+            }
+            .name {
+              font-size: 11px !important;
+            }
 
+      - type: button
+        show_name: true
+        show_icon: true
+        icon: mdi:history
+        tap_action:
+          action: perform-action
+          perform_action: input_number.set_value
+          target:
+            entity_id: input_number.frigate_ai_event_index
+          data:
+            value: 0
+        card_mod:
+          style: |
+            ha-card {
+              height: 52px !important;
+              padding: 2px !important;
+            }
+            ha-state-icon {
+              --mdc-icon-size: 20px;
+            }
+            .name {
+              font-size: 11px !important;
+            }
+
+      - type: button
+        show_name: true
+        show_icon: true
+        icon: mdi:chevron-right
+        tap_action:
+          action: perform-action
+          perform_action: script.frigate_ai_next
+        card_mod:
+          style: |
+            ha-card {
+              height: 52px !important;
+              padding: 2px !important;
+            }
+            ha-state-icon {
+              --mdc-icon-size: 20px;
+            }
+            .name {
+              font-size: 11px !important;
+            }
+
+  - type: markdown
+    content: >
+      {% set e = 'sensor.frigate_latest_ai_event' %}
+      {% set events = state_attr(e, 'events') | default([], true) %}
+      {% set raw_index = states('input_number.frigate_ai_event_index') | int(0) %}
+      {% set count = events | length %}
+
+      {% if count > 0 %}
+        {% set index = [raw_index, count - 1] | min %}
+        {% set event = events[index] %}
+
+        ![Frigate event](/api/frigate/notifications/{{ event.review_id }}/{{ event.camera }}/review_thumbnail.webp)
+
+        ### 🤖 {{ event.title }}
+
+        **{{ event.camera }}** · {{ event.event_time }}
+
+        {{ event.description }}
+
+        {% if event.threat_level | int(0) > 0 %}
+        **⚠️ Threat level: {{ event.threat_level }}**
+        {% endif %}
+
+        {% if event.confidence is not none and event.confidence | float < 0.9 %}
+        *AI confidence: {{ (event.confidence | float * 100) | round(0) }}%*
+        {% endif %}
+
+        *Event {{ index + 1 }} of {{ count }} · newest first*
+      {% else %}
+        **No Frigate GenAI events stored yet.**
+      {% endif %}
+
+    card_mod:
+      style:
+        ha-markdown $: |
+          img {
+            display: block !important;
+            margin-left: auto !important;
+            margin-right: auto !important;
+            border-radius: 8px;
+          }
