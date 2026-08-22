@@ -1,1 +1,113 @@
+template:
+  - triggers:
+      - trigger: mqtt
+        topic: frigate/reviews
 
+    conditions:
+      - condition: template
+        value_template: "{{ trigger.payload_json.type == 'genai' }}"
+
+    sensor:
+      - name: Frigate Latest AI Event
+        unique_id: frigate_latest_ai_event
+
+        state: >
+          {{ trigger.payload_json.after.data.metadata.title }}
+
+        attributes:
+          description: >
+            {{ trigger.payload_json.after.data.metadata.scene }}
+
+          summary: >
+            {{ trigger.payload_json.after.data.metadata.shortSummary }}
+
+          camera: >
+            {{ trigger.payload_json.after.camera }}
+
+          objects: >
+            {{ trigger.payload_json.after.data.objects }}
+
+          zones: >
+            {{ trigger.payload_json.after.data.zones }}
+
+          confidence: >
+            {{ trigger.payload_json.after.data.metadata.confidence }}
+
+          threat_level: >
+            {{ trigger.payload_json.after.data.metadata.potential_threat_level }}
+
+          review_id: >
+            {{ trigger.payload_json.after.id }}
+
+          detection_id: >
+            {{ trigger.payload_json.after.data.detections[0] }}
+
+          thumbnail: >
+            {{ trigger.payload_json.after.thumb_path }}
+
+          event_time: >
+            {{ trigger.payload_json.after.data.metadata.time }}
+
+          events: >
+            {% set old = this.attributes.events | default([], true) %}
+            {% set event = {
+              'title': trigger.payload_json.after.data.metadata.title,
+              'description': trigger.payload_json.after.data.metadata.scene,
+              'summary': trigger.payload_json.after.data.metadata.shortSummary,
+              'camera': trigger.payload_json.after.camera,
+              'event_time': trigger.payload_json.after.data.metadata.time,
+              'confidence': trigger.payload_json.after.data.metadata.confidence,
+              'threat_level': trigger.payload_json.after.data.metadata.potential_threat_level,
+              'review_id': trigger.payload_json.after.id,
+              'detection_id': trigger.payload_json.after.data.detections[0]
+            } %}
+            {{ ([event] + old)[:10] }}
+
+input_number:
+  frigate_ai_event_index:
+    name: Frigate AI Event Index
+    min: 0
+    max: 9
+    step: 1
+    mode: box
+
+script:
+  frigate_ai_previous:
+    alias: Frigate AI Previous
+    sequence:
+      - action: input_number.set_value
+        target:
+          entity_id: input_number.frigate_ai_event_index
+        data:
+          value: >
+            {% set current = states('input_number.frigate_ai_event_index') | int(0) %}
+            {% set events = state_attr('sensor.frigate_latest_ai_event', 'events') | default([], true) %}
+            {{ [current + 1, (events | length) - 1] | min }}
+    mode: single
+
+  frigate_ai_next:
+    alias: Frigate AI Next
+    sequence:
+      - action: input_number.set_value
+        target:
+          entity_id: input_number.frigate_ai_event_index
+        data:
+          value: >
+            {% set current = states('input_number.frigate_ai_event_index') | int(0) %}
+            {{ [current - 1, 0] | max }}
+    mode: single
+
+automation:
+  - alias: Frigate AI Card - Return to Latest
+    id: frigate_ai_card_return_to_latest
+    description: Return the GenAI event browser to the newest event when a new result arrives
+    triggers:
+      - trigger: state
+        entity_id: sensor.frigate_latest_ai_event
+    actions:
+      - action: input_number.set_value
+        target:
+          entity_id: input_number.frigate_ai_event_index
+        data:
+          value: 0
+    mode: restart
