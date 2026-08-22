@@ -97,17 +97,4 @@ script:
             {{ [current - 1, 0] | max }}
     mode: single
 
-automation:
-  - alias: Frigate AI Card - Return to Latest
-    id: frigate_ai_card_return_to_latest
-    description: Return the GenAI event browser to the newest event when a new result arrives
-    triggers:
-      - trigger: state
-        entity_id: sensor.frigate_latest_ai_event
-    actions:
-      - action: input_number.set_value
-        target:
-          entity_id: input_number.frigate_ai_event_index
-        data:
-          value: 0
-    mode: restart
+
