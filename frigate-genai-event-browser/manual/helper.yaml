@@ -1,1 +1,12 @@
+# Frigate GenAI Event Browser
+# Event navigation index helper
+#
+# Merge this entry into the `input_number:` section
+# of configuration.yaml.
 
+frigate_ai_event_index:
+  name: Frigate AI Event Index
+  min: 0
+  max: 9
+  step: 1
+  mode: box
