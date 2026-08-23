@@ -1,1 +1,99 @@
+alias: Frigate GenAI Telegram Notifications
+description: Send completed Frigate GenAI review events to Telegram with an animated preview and GenAI description.
 
+# ---------------------------------------------------------------------------
+# USER CONFIGURATION
+# ---------------------------------------------------------------------------
+
+variables:
+  # Telegram chat ID that should receive notifications.
+  chat_id: YOUR_CHAT_ID
+
+  # External Home Assistant URL. Do not include a trailing slash.
+  external_url: "https://home.example.com"
+
+  # Set to true to notify only when person_entity is not home.
+  away_only: false
+
+  # Home Assistant person entity used when away_only is true.
+  person_entity: person.your_name
+
+# ---------------------------------------------------------------------------
+# FRIGATE EVENT
+# ---------------------------------------------------------------------------
+
+triggers:
+  - trigger: mqtt
+    topic: frigate/reviews
+
+conditions:
+  # Wait for Frigate's completed GenAI update rather than the initial review
+  # event. This provides the GenAI metadata and avoids duplicate notifications.
+  - condition: template
+    value_template: >
+      {{ trigger.payload_json.type == 'genai' }}
+
+  # If away_only is false, always notify.
+  # If true, notify only when the configured person is not home.
+  - condition: template
+    value_template: >
+      {{ not away_only or not is_state(person_entity, 'home') }}
+
+actions:
+  - variables:
+      # Review ID is used for the animated review preview.
+      review_id: "{{ trigger.payload_json.after.id }}"
+
+      # Detection ID is used for the clip and snapshot.
+      detection_id: >
+        {{ trigger.payload_json.after.data.detections[0] }}
+
+      camera: "{{ trigger.payload_json.after.camera }}"
+
+      title: >
+        {{ trigger.payload_json.after.data.metadata.title
+           | default('Frigate alert', true) }}
+
+      description: >
+        {{ trigger.payload_json.after.data.metadata.scene
+           | default('', true) }}
+
+      event_time: >
+        {{ trigger.payload_json.after.data.metadata.time
+           | default('', true) }}
+
+      # Home Assistant fetches the GIF and uploads it to Telegram.
+      # Change the address below to the internal address of your HA instance.
+      gif_url: >
+        http://HOME_ASSISTANT_IP:8123/api/frigate/notifications/{{ review_id }}/review_preview.gif
+
+      clip_url: >
+        {{ external_url }}/api/frigate/notifications/{{ detection_id }}/{{ camera }}/clip.mp4
+
+      snapshot_url: >
+        {{ external_url }}/api/frigate/notifications/{{ detection_id }}/snapshot.jpg
+
+  - action: telegram_bot.send_animation
+    data:
+      chat_id:
+        - "{{ chat_id }}"
+
+      url: "{{ gif_url }}"
+
+      caption: >-
+        <b>🤖 {{ title }}</b>
+
+        <b>{{ camera }}</b>{% if event_time %} · {{ event_time }}{% endif %}
+
+        {{ description }}
+
+      parse_mode: html
+
+      inline_keyboard:
+        - >-
+          🎬 View Clip:{{ clip_url }},
+          📷 View Snapshot:{{ snapshot_url }}
+
+# Queue simultaneous events so notifications from multiple cameras are not lost.
+mode: queued
+max: 10
