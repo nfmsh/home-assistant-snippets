@@ -37,6 +37,23 @@ Covers:
 
 [View the Frigate GenAI with Ollama Cloud guide](./frigate-ollama-cloud/)
 
+### ✈️ Frigate GenAI Telegram Notifications
+
+A single Home Assistant automation for sending completed Frigate GenAI events to Telegram.
+
+Features include:
+
+- Animated Frigate review preview
+- GenAI event title and full AI description
+- Camera and event time
+- View Clip and View Snapshot buttons
+- Optional away-only notifications using a Home Assistant person entity
+- Supports multiple Frigate cameras
+- Queues events that occur close together
+- No additional helpers or scripts required
+
+[View the Frigate GenAI Telegram Notifications](./frigate-genai-telegram-notifications/)
+
 ---
 
 More snippets will be added as I find useful bits worth sharing.
